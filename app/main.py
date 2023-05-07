@@ -40,6 +40,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 def make_prediction(input_features: InputFeatures):
     svc = joblib.load(os.path.join('models', f'{input_features.model_name}.joblib'))
     feat_names = input_features.feature_values.keys()
+    logger.debug(input_features.feature_values)
     try:
         n_rows = len(input_features.feature_values[list(feat_names)[0]])
     except TypeError:
