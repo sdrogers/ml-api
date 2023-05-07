@@ -12,6 +12,7 @@ logger = logging.getLogger(__file__)
 
 class InputFeatures(BaseModel):
     feature_values: list[float]
+    model_name: str
 
 app = FastAPI()
 
@@ -25,7 +26,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 
 @app.post("/models/predict")
 def make_prediction(input_features: InputFeatures):
-    svc = load('models/svc.joblib')
+    svc = load(f'models/{input_features.model_name}.joblib')
     n_feat = svc.n_features_in_
     try:
         feats = np.array(
@@ -37,7 +38,11 @@ def make_prediction(input_features: InputFeatures):
         return {"error": message}
     probs = svc.predict_proba(feats)
     logger.debug(probs.shape)
-    output = {}
+    output = {
+        'model_name': input_features.model_name,
+        'feature_values': input_features.feature_values,
+        'prediction': {}
+    }
     for i, cl in enumerate(svc.classes_):
-        output[int(cl)] = probs[0][i]
+        output['prediction'][int(cl)] = probs[0][i]
     return output
